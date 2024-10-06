@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  
+  orders_api:
+    build:
+      context: ./APIS/orders
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./APIS/orders:/usr/orderAPI
+      - ./infraestructura/prisma:/usr/infraestructura/prisma
+
+  payments_api:
+    build:
+      context: ./APIS/payments
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./APIS/payments:/usr/paimentAPI
+      - ./infraestructura/prisma:/usr/infraestructura/prisma
+
+  products_api:
+    build:
+      context: ./APIS/products
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./APIS/products:/usr/productAPI
+      - ./infraestructura/prisma:/usr/infraestructura/prisma
+
+  shopingCar_api:
+    build:
+      context: ./APIS/shoping_car
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./APIS/shoping_car:/usr/shoppingCarApi
+      - ./infraestructura/prisma:/usr/infraestructura/prisma

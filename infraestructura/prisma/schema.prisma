@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Products {
+  id          Int                  @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  category    String
+  stock       Int?    // Opcional
+
+  // Relación muchos a muchos con Shopping_car (a través de una tabla intermedia)
+  shoppingCar ShoppingCarProducts[] 
+
+  // Relación muchos a muchos con Orders (a través de una tabla intermedia)
+  orders      OrdersProducts[] 
+}
+
+model Payments {
+  id       Int      @id @default(autoincrement())
+  amount   Float
+  method   String
+  date     DateTime
+
+  // Relación uno a uno con Orders
+  order   Orders?   @relation(fields: [orderId], references: [id])
+  orderId  Int?     @unique
+}
+
+model Orders {
+  id         Int      @id @default(autoincrement())
+  total      Float
+  orderDate  DateTime
+
+  // Relación muchos a muchos con Products
+  products   OrdersProducts[]  
+
+  // Relación uno a uno con Payments
+  payment   Payments?
+
+  // Relación muchos a uno con Shopping_car
+  shoppingCar Shopping_car? @relation(fields: [shoppingCarId], references: [id])
+  shoppingCarId Int?
+}
+
+model OrdersProducts {
+  productId Int
+  orderId   Int
+  product   Products @relation(fields: [productId], references: [id])
+  order     Orders   @relation(fields: [orderId], references: [id])
+
+  @@id([productId, orderId]) // Define la clave primaria compuesta
+}
+
+
+model Shopping_car {
+  id        Int                  @id @default(autoincrement())
+  total     Float
+  products  ShoppingCarProducts[]  // Relación muchos a muchos con Products
+  orders    Orders[]              // Relación uno a muchos con Orders
+}
+
+model ShoppingCarProducts {
+  shoppingCarId Int
+  productId     Int
+  shoppingCar   Shopping_car @relation(fields: [shoppingCarId], references: [id])
+  product       Products      @relation(fields: [productId], references: [id])
+
+  @@id([shoppingCarId, productId]) // Clave primaria compuesta
+}
