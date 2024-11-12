@@ -1,39 +1,218 @@
-version: "3.8"
+version: '3.8'
 
 services:
   
+  # Servidor Web (Proxy)
+  webserver:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - order_api
+      - payment_gateway_api
+      - product_api
+      - shopping_carapi
+    networks:
+      - dev_network
+
+  # API de Ordenes
   orders_api:
-    build:
-      context: ./APIS/orders
+    build: 
+      context: ./APIS
+      dockerfile: Dockerfile.orders
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
     ports:
-      - "3000:3000"
+      - "3100:3100"
     volumes:
-      - ./APIS/orders:/usr/orderAPI
-      - ./infraestructura/prisma:/usr/infraestructura/prisma
+      - ./APIS/order:/order/orderAPI
+    networks:
+      - dev_network
+    environment:
+      - DATABASE_URL=postgres://postgres:12345@orders_db_dev:5432/orders_db_dev?schema=public
 
+  # Base de Datos para Ordenes
+  orders_db_dev:
+    image: postgres
+    container_name: order_db_dev
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 4GB
+        reservations:
+          cpus: "0.1"
+          memory: 1GB
+    ports:
+      - "5100:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - orders_data_dev:/var/lib/postgresql/data
+    networks:
+      - dev_network
+
+  # API de Pagos
   payments_api:
-    build:
-      context: ./APIS/payments
+    build: 
+      context: ./APIS
+      dockerfile: Dockerfile.payment_gateway
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
     ports:
-      - "3000:3000"
+      - "3200:3200"
     volumes:
-      - ./APIS/payments:/usr/paimentAPI
-      - ./infraestructura/prisma:/usr/infraestructura/prisma
+      - ./APIS/payment_gateway:/payment_gateway/payment_gatewayAPI
+    networks:
+      - dev_network
+    environment:
+      - DATABASE_URL=postgres://postgres:12345@payments_db_dev:5432/payment_gateway_db_dev?schema=public
 
+  # Base de Datos para Pagos
+  payments_db_dev:
+    image: postgres
+    container_name: payment_gateway_db_dev
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 4GB
+        reservations:
+          cpus: "0.1"
+          memory: 1GB
+    ports:
+      - "5200:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - payments_data_dev:/var/lib/postgresql/data
+    networks:
+      - dev_network
+
+  # API de Productos
   products_api:
-    build:
-      context: ./APIS/products
+    build: 
+      context: ./APIS
+      dockerfile: Dockerfile.product
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
     ports:
-      - "3000:3000"
+      - "3300:3300"
     volumes:
-      - ./APIS/products:/usr/productAPI
-      - ./infraestructura/prisma:/usr/infraestructura/prisma
+      - ./APIS/product:/product/productAPI
+    networks:
+      - dev_network
+    environment:
+      - DATABASE_URL=postgres://postgres:12345@products_db_dev:5432/product_db_dev?schema=public
+    
+  # Base de Datos para Productos
+  products_db_dev:
+    image: postgres
+    container_name: product_db_dev
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 4GB
+        reservations:
+          cpus: "0.1"
+          memory: 1GB
+    ports:
+      - "5300:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - product_data_dev:/var/lib/postgresql/data
+    networks:
+      - dev_network
 
-  shopingCar_api:
-    build:
-      context: ./APIS/shoping_car
+  # API de Carrito de Compras
+  shopping_api:
+    build: 
+      context: ./APIS
+      dockerfile: Dockerfile.shopping_car
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
     ports:
-      - "3000:3000"
+      - "3400:3400"
     volumes:
-      - ./APIS/shoping_car:/usr/shoppingCarApi
-      - ./infraestructura/prisma:/usr/infraestructura/prisma
+      - ./APIS/shopping_car:/shopping_car/shoppingAPI
+    networks:
+      - dev_network
+    environment:
+      - DATABASE_URL=postgres://postgres:12345@shopping_car_db_dev:5432/shopping_car_db_dev?schema=public
+
+  # Base de Datos para Carrito de Compras
+  shopping_db_dev:
+    image: postgres
+    container_name: shopping_car_db_dev
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 4GB
+        reservations:
+          cpus: "0.1"
+          memory: 1GB
+    ports:
+      - "5400:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - shopping_car_data_dev:/var/lib/postgresql/data
+    networks:
+      - dev_network
+
+  # pgAdmin para administrar bases de datos
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: dev_pgadmin
+    ports:
+      - 8888:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: Miguelcajigas19@Miguelcajigas19.com
+      PGADMIN_DEFAULT_PASSWORD: 12345
+    networks:
+      - dev_network
+
+networks:
+  dev_network:
+    driver: bridge
+
+volumes:
+  orders_data_dev:
+  payments_data_dev:
+  products_data_dev:
+  shopping_data_dev:

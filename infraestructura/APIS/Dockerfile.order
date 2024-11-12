@@ -2,7 +2,7 @@ FROM node:20
 
 USER root
 
-RUN Apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     wget \
     nano
 
@@ -16,19 +16,20 @@ RUN npm install prisma -g \
     && npm install express -g \
     && npm install jsonwebtoken -g \
     && npm install nodemon -g \
-    && npm install @prisma/client -g
+    && npm install @prisma/client -g \
+    && npm install axios -g
 
-RUN mkdir -p /usr/orderAPI
+RUN mkdir -p /order/orderAPI
 
-WORKDIR /usr/orderApi
+WORKDIR /order/orderAPI
 
-COPY orders/package*.json /usr/orderApi/
+COPY order/package*.json /order/orderAPI
 
 RUN npm install
 
 RUN npm install dotenv --save-dev
 
-COPY orders /usr/orderApi/
+COPY order /order/orderAPI
 
 RUN prisma generate
 

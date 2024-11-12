@@ -1,16 +1,23 @@
 {
   "name": "shopping_car",
   "version": "1.0.0",
-  "description": "Microservicios",
-  "main": "index.js",
+  "description": "Microservicio shopping car",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Miguelcajigas19Ch",
+  "author": "Kevin Chachinoy",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.0",
-    "nodemon": "^3.1.4",
-    "shopping_car": "file:"
+    "@prisma/client": "^5.21.1",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.7"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "prisma": "^5.20.0"
   }
 }
